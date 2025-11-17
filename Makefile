@@ -111,7 +111,9 @@ docker:
 
 	echo "✅ Images pushed: $(IMAGE):latest and $(IMAGE):$(VERSION)"
 
-publish: bump docker
+git-push:
 	git push
 	git push --tags
 	echo "📦 Published version $(shell cat ./app/VERSION)"
+
+publish: bump docker git-push
