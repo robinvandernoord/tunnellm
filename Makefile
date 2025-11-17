@@ -38,8 +38,8 @@ define do_bump
 endef
 
 version:
-	version=$(shell echo $(VERSION_FILE))
-	cat $$version
+	version=$(shell cat $(VERSION_FILE))
+	echo $$version
 
 install:
 	echo "Installing local release dependencies..."
@@ -55,7 +55,7 @@ build:
 	# -s: disable symbol table
 	# -w: disable DWARF generation
 	# -trimpath strips computers file paths from error messages
-	version=$(shell echo $(VERSION_FILE))
+	version=$(shell cat $(VERSION_FILE))
 
 	go build \
 		-C app \
@@ -64,7 +64,7 @@ build:
 		-o ../target/tunnellm
 
 build-dev:
-	version=$(shell echo $(VERSION_FILE))
+	version=$(shell cat $(VERSION_FILE))
 
 	go build \
 		-C app \
@@ -97,7 +97,7 @@ bump-dry:
 	echo "🔍 Would bump to: $$NEXT_VERSION"
 
 docker:
-	version=$(shell echo $(VERSION_FILE))
+	version=$(shell cat $(VERSION_FILE))
 
 	BUILDER_NAME="tunnellm-builder-$$RANDOM"
 	trap 'echo "🧹 Removing builder $(BUILDER_NAME)..."; \
@@ -121,7 +121,7 @@ docker:
 	echo "✅ Images pushed: $(IMAGE):latest and $(IMAGE):$$version"
 
 git-push:
-	version=$(shell echo $(VERSION_FILE))
+	version=$(shell cat $(VERSION_FILE))
 	git push
 	git push --tags
 	echo "📦 Published version $$version"
