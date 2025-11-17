@@ -2,10 +2,18 @@ FROM golang:1.25-alpine
 
 RUN apk add make
 
-COPY .. .
+COPY . .
 
 RUN go install
 
-RUN go build -o /tunellm .
+# release build
+# -h: halt on error
+# -s: disable symbol table
+# -w: disable DWARF generation
+# -trimpath strips computers file paths from error messages
+RUN go build \
+      -trimpath \
+      -ldflags "-s -w -h -X main.version=$(VERSION)" \
+      -o ../target/tunnellm
 
-CMD ["/tunellm"]
+CMD ["/tunnellm"]

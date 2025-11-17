@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bytes"
-	"compress/flate"
-	"compress/gzip"
 	_ "embed"
+	"errors"
+	"flag"
 	"fmt"
-	"io"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -15,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/andybalholm/brotli"
 	"github.com/joho/godotenv"
 )
 
@@ -30,14 +28,14 @@ type AppConfig struct {
 //go:embed VERSION
 var version string
 
-const max_verbosity = 2
+const max_verbosity = 1
 
-func (c AppConfig) load() AppConfig {
+func (c AppConfig) load() (*AppConfig, error) {
 	_ = godotenv.Load()
 
 	api_key, ok := os.LookupEnv("OPENROUTER_API_KEY")
 	if !ok {
-		panic("missing OPENROUTER_API_KEY")
+		return nil, errors.New("missing OPENROUTER_API_KEY")
 	}
 
 	endpoint, ok := os.LookupEnv("ENDPOINT")
@@ -61,13 +59,13 @@ func (c AppConfig) load() AppConfig {
 		verbosity_int = max_verbosity
 	}
 
-	return AppConfig{
+	return &AppConfig{
 		port:      fmt.Sprintf(":%s", port),
 		verbosity: int8(verbosity_int),
 		api_key:   api_key,
 		version:   version,
 		endpoint:  endpoint,
-	}
+	}, nil
 }
 
 func (c AppConfig) Bearer() string {
@@ -78,39 +76,40 @@ func (c AppConfig) UserAgent() string {
 	return fmt.Sprintf("tunnellm / %s", c.version)
 }
 
-func decompress_body(resp *http.Response, body_bytes []byte) ([]byte, error) {
-	encoding := resp.Header.Get("Content-Encoding")
-	if encoding == "" {
-		return body_bytes, nil
-	}
+func print_version() {
+	fmt.Printf("TunnelLM %s\n", version)
+}
 
-	reader := bytes.NewReader(body_bytes)
+func (c AppConfig) PortAvailable() bool {
+	ln, err := net.Listen("tcp", c.port)
 
-	switch encoding {
-	case "gzip":
-		gz_reader, err := gzip.NewReader(reader)
-		if err != nil {
-			return nil, err
-		}
-		defer gz_reader.Close()
-		return io.ReadAll(gz_reader)
-
-	case "deflate":
-		deflate_reader := flate.NewReader(reader)
-		defer deflate_reader.Close()
-		return io.ReadAll(deflate_reader)
-
-	case "br":
-		br_reader := brotli.NewReader(reader)
-		return io.ReadAll(br_reader)
-
-	default:
-		return nil, fmt.Errorf("unknown content encoding: %s", encoding)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "! Failed to bind %s: %v\n", c.port, err)
+		return false
+	} else {
+		ln.Close()
+		return true
 	}
 }
 
 func main() {
-	cfg := AppConfig{}.load()
+	// if sys.argv[0] == --version
+	show_version := flag.Bool("version", false, "print version and exit")
+
+	if *show_version {
+		print_version()
+		os.Exit(0)
+	}
+
+	fmt.Printf("TunnelLM %s\n", version)
+
+	cfg, err := AppConfig{}.load()
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
 	bearer := cfg.Bearer()
 	user_agent := cfg.UserAgent()
 
@@ -138,30 +137,19 @@ func main() {
 			if cfg.verbosity > 0 {
 				fmt.Printf("%d: %s\n", resp.StatusCode, resp.Request.URL)
 			}
-			if cfg.verbosity > 1 {
-				body_bytes, err := io.ReadAll(resp.Body)
-				if err != nil {
-					return err
-				}
-
-				// fmt.Printf("%s", string(body_bytes))
-				decompressed, err := decompress_body(resp, body_bytes)
-				if err == nil {
-					// todo: this breaks streaming, we should be using a tee‑reader
-					fmt.Printf("%s\n", decompressed)
-				}
-
-				// put body back so the proxy can forward it
-				resp.Body = io.NopCloser(bytes.NewBuffer(body_bytes))
-
-			}
+			// verbosity 2 would read the body (decompressed) but that broke streaming
 			return nil
 		},
 	}
 
 	http.HandleFunc("/", proxy.ServeHTTP)
 
-	fmt.Printf("TunneLLM running on localhost%s\n", cfg.port)
+	if cfg.PortAvailable() {
+		fmt.Printf("→ Listening on localhost%s\n", cfg.port)
 
-	log.Fatal(http.ListenAndServe(cfg.port, nil))
+		log.Fatal(http.ListenAndServe(cfg.port, nil))
+	} else {
+		os.Exit(1)
+	}
+
 }

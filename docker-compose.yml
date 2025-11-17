@@ -1,14 +1,14 @@
 version: "3"
 services:
-  tunellm:
-    container_name: tunellm
+  tunnellm:
+    container_name: tunnellm
     build:
       context: app
       x-bake:
         platforms:
           - linux/amd64
           - linux/arm64
-    image: robinvandernoord/tunellm:latest
+    image: robinvandernoord/tunnellm:latest
     ports:
       - "${PORT:-11434}:${PORT:-11434}"
     env_file:

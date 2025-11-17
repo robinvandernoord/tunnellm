@@ -4,7 +4,7 @@ SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 
 REGISTRY ?= robinvandernoord
-IMAGE := $(REGISTRY)/tunellm
+IMAGE := $(REGISTRY)/tunnellm
 VERSION := $(shell cat app/VERSION)
 DOCKER_CONFIG = .docker
 
@@ -47,13 +47,25 @@ install:
 	echo "Dependencies installed."
 
 build:
+	# release build
+	# -h: halt on error
+	# -s: disable symbol table
+	# -w: disable DWARF generation
+	# -trimpath strips computers file paths from error messages
+	go build \
+		-C app \
+		-trimpath \
+		-ldflags "-s -w -h -X main.version=$(VERSION)" \
+		-o ../target/tunnellm
+
+build-dev:
 	go build \
 		-C app \
 		-ldflags "-X main.version=$(VERSION)" \
-		-o target/tunellm
+		-o ../target/tunnellm
 
-run: build
-	./target/tunellm
+run: build-dev
+	./target/tunnellm
 
 clean:
 	rm -rf target
@@ -76,7 +88,7 @@ bump-dry:
 	echo "🔍 Would bump to: $$NEXT_VERSION"
 
 docker:
-	BUILDER_NAME="tunellm-builder-$$RANDOM"
+	BUILDER_NAME="tunnellm-builder-$$RANDOM"
 	trap 'echo "🧹 Removing builder $(BUILDER_NAME)..."; \
 	      docker --config $(DOCKER_CONFIG) buildx rm -f "$$BUILDER_NAME" >/dev/null 2>&1 || true' EXIT
 
@@ -100,4 +112,4 @@ docker:
 publish: bump docker
 	git push
 	git push --tags
-	echo "📦 Published version $(shell cat VERSION)"
+	echo "📦 Published version $(shell cat ./app/VERSION)"
