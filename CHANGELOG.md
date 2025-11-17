@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2 - 2025-11-17
+
+
+### ⚡ Performance
+
+- Move go code in ./app so the image size is smaller
+
 ## 0.3.1 - 2025-11-17
 
 
