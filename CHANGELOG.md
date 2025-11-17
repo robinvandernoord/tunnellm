@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 - 2025-11-17
+
+
+### 🐛 Fixes
+
+- Actually use logged-in .docker for every docker command
+
 ## 0.3.0 - 2025-11-17
 
 
