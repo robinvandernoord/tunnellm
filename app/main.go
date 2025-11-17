@@ -40,7 +40,7 @@ func (c AppConfig) load() (*AppConfig, error) {
 
 	endpoint, ok := os.LookupEnv("ENDPOINT")
 	if endpoint == "" {
-		endpoint = "https://openrouter.ai"
+		endpoint = "https://openrouter.ai/api"
 	}
 
 	port := os.Getenv("PORT")
@@ -121,8 +121,8 @@ func main() {
 			req.URL.Host = target.Host
 			req.Host = target.Host
 
-			if !strings.HasPrefix(req.URL.Path, "/api") {
-				req.URL.Path = fmt.Sprintf("/api%s", req.URL.Path)
+			if !strings.HasPrefix(req.URL.Path, target.Path) {
+				req.URL.Path = fmt.Sprintf("%s%s", target.Path, req.URL.Path)
 			}
 
 			if cfg.verbosity > 0 {
