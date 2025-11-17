@@ -77,8 +77,10 @@ bump:
 # Forced bumps
 bump-major:
 	$(call do_bump,major)
+
 bump-minor:
 	$(call do_bump,minor)
+
 bump-patch:
 	$(call do_bump,patch)
 
