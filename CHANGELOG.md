@@ -11,3 +11,4 @@
 ### ⚙️ Miscellaneous Tasks
 
 - *(release)* Version
+- *(release)* 0.1.0
