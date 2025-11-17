@@ -1,0 +1,12 @@
+version: "3"
+services:
+  tunellm:
+    container_name: tunellm
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tunellm:latest
+    ports:
+      - "${PORT:-11434}:${PORT:-11434}"
+    env_file:
+      - .env
