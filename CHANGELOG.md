@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.2 - 2025-11-17
+
+
+### 🐛 Fixes
+
+- Use 'scratch' distroless base for even more optmized image
+
 ## 1.0.1 - 2025-11-17
 
 
