@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 - 2025-11-17
+
+
+### 🐛 Fixes
+
+- Improved user-agent
+
 ## 0.3.3 - 2025-11-17
 
 
