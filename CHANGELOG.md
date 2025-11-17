@@ -1,3 +1,8 @@
+## [0.2.0] - 2025-11-17
+
+### 🐛 Bug Fixes
+
+- Improved Makefile for releases using `cliff`
 ## [0.1.1] - 2025-11-17
 
 ### ⚙️ Miscellaneous Tasks
