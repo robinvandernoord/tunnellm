@@ -3,8 +3,10 @@ SHELL := /bin/bash
 .ONESHELL:
 .SHELLFLAGS := -eu -o pipefail -c
 
-IMAGE := tunellm
+REGISTRY ?= robinvandernoord
+IMAGE := $(REGISTRY)/tunellm
 VERSION := $(shell cat VERSION)
+DOCKER_CONFIG = .docker
 
 # Helper macro: safe git-cliff bump wrapper
 define do_bump
@@ -74,7 +76,27 @@ bump-dry:
 	echo "🔍 Would bump to: $$NEXT_VERSION"
 
 docker:
-	docker buildx build -t $(IMAGE):$(VERSION) .
+	# Always clean up the temporary buildx builder
+	BUILDER_NAME="tunellm-builder-$$RANDOM"
+	trap 'echo "🧹 Removing builder $(BUILDER_NAME)..."; docker buildx rm -f "$$BUILDER_NAME" >/dev/null 2>&1 || true' EXIT
+
+	mkdir -p $(DOCKER_CONFIG)
+	echo "🔐 Logging into Docker registry..."
+	docker --config $(DOCKER_CONFIG) login
+
+	echo "🔧 Creating temporary builder $(BUILDER_NAME)..."
+	docker buildx create --name "$$BUILDER_NAME" --driver docker-container --use >/dev/null
+
+	echo "🚀 Building and pushing multi-arch images (linux/amd64, linux/arm64)..."
+	docker buildx bake \
+		--file docker-compose.yml \
+		--set *.tags+="$(IMAGE):latest" \
+		--set *.tags+="$(IMAGE):$(VERSION)" \
+		--push || { echo "❌ Docker build or push failed"; exit 1; }
+
+	echo "✅ Images pushed: $(IMAGE):latest and $(IMAGE):$(VERSION)"
 
 publish: bump build docker
+	git push
+	git push --tags
 	echo "📦 Published version $(shell cat VERSION)"
