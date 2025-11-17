@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.3 - 2025-11-17
+
+
+### 🐛 Fixes
+
+- Tag dockers with new version instead of old one
+
+- Don't hardcode insert /api in path, use path specified in `endpoint` instead
+
+
+### 📚 Documentation
+
+- Initial readme
+
 ## 1.0.2 - 2025-11-17
 
 
