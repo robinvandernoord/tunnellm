@@ -6,6 +6,7 @@
 - *(release)* V0.1.1
 - *(release)* Vv0.1.1
 - *(release)* Vvv0.1.1
+- *(release)* V0.1.1
 ## [0.1.0] - 2025-11-17
 
 ### 🚀 Features
