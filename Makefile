@@ -25,7 +25,7 @@ define do_bump
 		echo "⚠️  Nothing new to release."; \
 		exit 0; \
 	fi; \
-	git add VERSION CHANGELOG.md; \
+	git add ./app/VERSION CHANGELOG.md; \
 	if git diff --cached --quiet; then \
 		echo "⚠️  Nothing changed — skipping tag."; \
 	else \
