@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.3 - 2025-11-17
+
+
+### 🐛 Fixes
+
+- Updated path to version file
+
 ## 0.3.2 - 2025-11-17
 
 
