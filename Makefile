@@ -5,8 +5,10 @@ SHELL := /bin/bash
 
 REGISTRY ?= robinvandernoord
 IMAGE := $(REGISTRY)/tunnellm
-VERSION := $(shell cat app/VERSION)
 DOCKER_CONFIG = .docker
+
+VERSION_FILE = app/VERSION
+
 
 # Helper macro: safe git-cliff bump wrapper
 define do_bump
@@ -19,13 +21,13 @@ define do_bump
 	fi; \
 	# Guard against repeated 'v' prefixes
 	CLEAN_VERSION=$$(echo "$$NEW_VERSION" | sed 's/^v*//'); \
-	echo "$$CLEAN_VERSION" > app/VERSION; \
+	echo "$$CLEAN_VERSION" > $(VERSION_FILE); \
 	# Generate changelog
 	if git-cliff --bump $(1) --output CHANGELOG.md 2>&1 | grep -q "There is nothing to bump"; then \
 		echo "⚠️  Nothing new to release."; \
 		exit 0; \
 	fi; \
-	git add ./app/VERSION CHANGELOG.md; \
+	git add ./$(VERSION_FILE) CHANGELOG.md; \
 	if git diff --cached --quiet; then \
 		echo "⚠️  Nothing changed — skipping tag."; \
 	else \
@@ -36,7 +38,8 @@ define do_bump
 endef
 
 version:
-	echo $(VERSION)
+	version=$(shell echo $(VERSION_FILE))
+	cat $$version
 
 install:
 	echo "Installing local release dependencies..."
@@ -52,16 +55,18 @@ build:
 	# -s: disable symbol table
 	# -w: disable DWARF generation
 	# -trimpath strips computers file paths from error messages
+	version=$(shell echo $(VERSION_FILE))
+
 	go build \
 		-C app \
 		-trimpath \
-		-ldflags "-s -w -h -X main.version=$(VERSION)" \
+		-ldflags "-s -w -h -X main.version=$$version" \
 		-o ../target/tunnellm
 
 build-dev:
 	go build \
 		-C app \
-		-ldflags "-X main.version=$(VERSION)" \
+		-ldflags "-X main.version=$$version" \
 		-o ../target/tunnellm
 
 run: build-dev
@@ -90,6 +95,8 @@ bump-dry:
 	echo "🔍 Would bump to: $$NEXT_VERSION"
 
 docker:
+	version=$(shell echo $(VERSION_FILE))
+
 	BUILDER_NAME="tunnellm-builder-$$RANDOM"
 	trap 'echo "🧹 Removing builder $(BUILDER_NAME)..."; \
 	      docker --config $(DOCKER_CONFIG) buildx rm -f "$$BUILDER_NAME" >/dev/null 2>&1 || true' EXIT
@@ -106,14 +113,15 @@ docker:
 	docker --config $(DOCKER_CONFIG) buildx bake \
 		--file docker-compose.yml \
 		--set *.tags+="$(IMAGE):latest" \
-		--set *.tags+="$(IMAGE):$(VERSION)" \
+		--set *.tags+="$(IMAGE):$$version" \
 		--push || { echo "❌ Docker build or push failed"; exit 1; }
 
-	echo "✅ Images pushed: $(IMAGE):latest and $(IMAGE):$(VERSION)"
+	echo "✅ Images pushed: $(IMAGE):latest and $(IMAGE):$$version"
 
 git-push:
+	version=$(shell echo $(VERSION_FILE))
 	git push
 	git push --tags
-	echo "📦 Published version $(shell cat ./app/VERSION)"
+	echo "📦 Published version $$version"
 
 publish: bump docker git-push
