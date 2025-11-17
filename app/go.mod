@@ -1,4 +1,4 @@
-module tunnellm
+module github.com/robinvandernoord/tunnellm
 
 go 1.25
 
