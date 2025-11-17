@@ -17,7 +17,7 @@ define do_bump
 	NEW_VERSION=$$(git-cliff --bump $(1) --bumped-version 2>/dev/null || true); \
 	if [ -z "$$NEW_VERSION" ]; then \
 		echo "⚠️  Nothing to bump."; \
-		exit 0; \
+		exit 1; \
 	fi; \
 	# Guard against repeated 'v' prefixes
 	CLEAN_VERSION=$$(echo "$$NEW_VERSION" | sed 's/^v*//'); \
@@ -25,7 +25,7 @@ define do_bump
 	# Generate changelog
 	if git-cliff --bump $(1) --output CHANGELOG.md 2>&1 | grep -q "There is nothing to bump"; then \
 		echo "⚠️  Nothing new to release."; \
-		exit 0; \
+		exit 1; \
 	fi; \
 	git add ./$(VERSION_FILE) CHANGELOG.md; \
 	if git diff --cached --quiet; then \
