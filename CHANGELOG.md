@@ -1,8 +1,14 @@
 # Changelog
 
+## 1.0.1 - 2025-11-17
+
+
+### 🐛 Fixes
+
+- Split dockerfile into stages so the final one contains just the final binary and no dependencies
+
 ## 1.0.0 - 2025-11-17
 
-I accidentally typo'd `tunellm` everywhere instead of `tunnellm` so rerelease :)
 
 ### 🐛 Fixes
 
