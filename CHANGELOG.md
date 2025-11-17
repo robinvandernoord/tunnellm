@@ -2,6 +2,7 @@
 
 ## 1.0.0 - 2025-11-17
 
+I accidentally typo'd `tunellm` everywhere instead of `tunnellm` so rerelease :)
 
 ### 🐛 Fixes
 
