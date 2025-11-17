@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.4 - 2025-11-17
+
+
+### 🐛 Fixes
+
+- Rename module so it can hopefully be installed externally
+
+- Rename module so it can hopefully be installed externally
+
+- Exit unsuccessful when nothing to bump so it doesn't continue
+
 ## 1.0.3 - 2025-11-17
 
 
