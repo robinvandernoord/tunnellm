@@ -76,19 +76,20 @@ bump-dry:
 	echo "🔍 Would bump to: $$NEXT_VERSION"
 
 docker:
-	# Always clean up the temporary buildx builder
 	BUILDER_NAME="tunellm-builder-$$RANDOM"
-	trap 'echo "🧹 Removing builder $(BUILDER_NAME)..."; docker buildx rm -f "$$BUILDER_NAME" >/dev/null 2>&1 || true' EXIT
+	trap 'echo "🧹 Removing builder $(BUILDER_NAME)..."; \
+	      docker --config $(DOCKER_CONFIG) buildx rm -f "$$BUILDER_NAME" >/dev/null 2>&1 || true' EXIT
 
 	mkdir -p $(DOCKER_CONFIG)
 	echo "🔐 Logging into Docker registry..."
 	docker --config $(DOCKER_CONFIG) login
 
 	echo "🔧 Creating temporary builder $(BUILDER_NAME)..."
-	docker buildx create --name "$$BUILDER_NAME" --driver docker-container --use >/dev/null
+	docker --config $(DOCKER_CONFIG) buildx create \
+		--name "$$BUILDER_NAME" --driver docker-container --use >/dev/null
 
 	echo "🚀 Building and pushing multi-arch images (linux/amd64, linux/arm64)..."
-	docker buildx bake \
+	docker --config $(DOCKER_CONFIG) buildx bake \
 		--file docker-compose.yml \
 		--set *.tags+="$(IMAGE):latest" \
 		--set *.tags+="$(IMAGE):$(VERSION)" \
