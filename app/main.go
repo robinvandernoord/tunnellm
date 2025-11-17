@@ -73,7 +73,7 @@ func (c AppConfig) Bearer() string {
 }
 
 func (c AppConfig) UserAgent() string {
-	return fmt.Sprintf("tunnellm / %s", c.version)
+	return fmt.Sprintf("TunnelLM / %s", c.version)
 }
 
 func print_version() {
