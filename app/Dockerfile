@@ -2,7 +2,7 @@ FROM golang:1.25-alpine
 
 RUN apk add make
 
-COPY . .
+COPY .. .
 
 RUN go install
 

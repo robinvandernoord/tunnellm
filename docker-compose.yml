@@ -3,7 +3,7 @@ services:
   tunellm:
     container_name: tunellm
     build:
-      context: .
+      context: app
       x-bake:
         platforms:
           - linux/amd64

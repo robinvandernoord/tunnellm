@@ -5,7 +5,7 @@ SHELL := /bin/bash
 
 REGISTRY ?= robinvandernoord
 IMAGE := $(REGISTRY)/tunellm
-VERSION := $(shell cat VERSION)
+VERSION := $(shell cat app/VERSION)
 DOCKER_CONFIG = .docker
 
 # Helper macro: safe git-cliff bump wrapper
@@ -19,7 +19,7 @@ define do_bump
 	fi; \
 	# Guard against repeated 'v' prefixes
 	CLEAN_VERSION=$$(echo "$$NEW_VERSION" | sed 's/^v*//'); \
-	echo "$$CLEAN_VERSION" > VERSION; \
+	echo "$$CLEAN_VERSION" > app/VERSION; \
 	# Generate changelog
 	if git-cliff --bump $(1) --output CHANGELOG.md 2>&1 | grep -q "There is nothing to bump"; then \
 		echo "⚠️  Nothing new to release."; \
@@ -48,9 +48,9 @@ install:
 
 build:
 	go build \
+		-C app \
 		-ldflags "-X main.version=$(VERSION)" \
-		-o target/tunellm \
-		.
+		-o target/tunellm
 
 run: build
 	./target/tunellm
@@ -97,7 +97,7 @@ docker:
 
 	echo "✅ Images pushed: $(IMAGE):latest and $(IMAGE):$(VERSION)"
 
-publish: bump build docker
+publish: bump docker
 	git push
 	git push --tags
 	echo "📦 Published version $(shell cat VERSION)"
