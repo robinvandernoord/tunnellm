@@ -4,7 +4,10 @@ services:
     container_name: tunellm
     build:
       context: .
-      dockerfile: Dockerfile
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     image: tunellm:latest
     ports:
       - "${PORT:-11434}:${PORT:-11434}"
