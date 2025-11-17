@@ -64,6 +64,8 @@ build:
 		-o ../target/tunnellm
 
 build-dev:
+	version=$(shell echo $(VERSION_FILE))
+
 	go build \
 		-C app \
 		-ldflags "-X main.version=$$version" \
